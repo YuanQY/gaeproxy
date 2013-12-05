@@ -73,9 +73,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import com.google.ads.AdRequest;
-import com.google.ads.AdSize;
-import com.google.ads.AdView;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import de.keyboardsurfer.android.widget.crouton.Crouton;
@@ -128,7 +125,6 @@ public class GAEProxyActivity extends PreferenceActivity
   private CheckBoxPreference isRunningCheck;
   private Preference proxiedApps;
   private CheckBoxPreference isBypassAppsCheck;
-  private AdView adView;
 
   private void copyAssets(String path) {
 
@@ -243,18 +239,6 @@ public class GAEProxyActivity extends PreferenceActivity
     setContentView(R.layout.main);
     addPreferencesFromResource(R.xml.gae_proxy_preference);
 
-    // Create the adView
-    adView = new AdView(GAEProxyActivity.this, AdSize.SMART_BANNER, "a14d8be8a284afc");
-    // Lookup your LinearLayout assuming it’s been given
-    // the attribute android:id="@+id/mainLayout"
-    FrameLayout layout = (FrameLayout) findViewById(R.id.ad);
-    // Add the adView to it
-    layout.addView(adView);
-    // Initiate a generic request to load it with an ad
-    AdRequest aq = new AdRequest();
-    // aq.setTesting(true);
-    adView.loadAd(aq);
-
     proxyText = (EditTextPreference) findPreference("proxy");
     portText = (EditTextPreference) findPreference("port");
     sitekeyText = (EditTextPreference) findPreference("sitekey");
@@ -342,8 +326,6 @@ public class GAEProxyActivity extends PreferenceActivity
       sProgressDialog.dismiss();
       sProgressDialog = null;
     }
-
-    adView.destroy();
 
     Crouton.cancelAllCroutons();
 
