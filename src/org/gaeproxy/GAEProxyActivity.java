@@ -130,6 +130,15 @@ public class GAEProxyActivity extends PreferenceActivity
 
     AssetManager assetManager = getAssets();
     String[] files = null;
+
+    // Engle, appt 默认不拷贝.开头的文件，所有转换为_
+    boolean isCerts = "certs".equalsIgnoreCase(path);
+    String targetPath = BASE + "/" + path + (path.isEmpty() ? "" : "/");
+    File outPath = new File(targetPath);
+    if (!outPath.isDirectory()) {
+        outPath.mkdirs();
+    }
+
     try {
       files = assetManager.list(path);
     } catch (IOException e) {
@@ -137,11 +146,16 @@ public class GAEProxyActivity extends PreferenceActivity
     }
     if (files != null) {
       for (String file : files) {
+        String outFileName = file;
         InputStream in;
         OutputStream out;
         try {
           in = assetManager.open(path + (path.isEmpty() ? "" : "/") + file);
-          out = new FileOutputStream(BASE + "/" + file);
+          if (isCerts) {
+              outFileName = file.replace('_', '.');
+              Log.d(TAG, "change " + file + " to " + outFileName);
+          }
+          out = new FileOutputStream(targetPath + outFileName);
           copyFile(in, out);
           in.close();
           out.flush();
@@ -262,20 +276,17 @@ public class GAEProxyActivity extends PreferenceActivity
       @Override
       public void run() {
 
-        Utils.isRoot();
+          Utils.isRoot();
 
         String versionName;
         try {
           versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
         } catch (NameNotFoundException e) {
-          versionName = "NONE";
+            Log.e(TAG, e.toString());
+            versionName = "NONE";
         }
 
         if (!settings.getBoolean(versionName, false)) {
-
-          Editor edit = settings.edit();
-          edit.putBoolean(versionName, true);
-          edit.commit();
 
           File f = new File(BASE + "/certs");
           if (f.exists() && f.isFile()) f.delete();
@@ -286,6 +297,7 @@ public class GAEProxyActivity extends PreferenceActivity
           if (hosts.exists()) hosts.delete();
 
           copyAssets("");
+          copyAssets("certs");
 
           Utils.runCommand("chmod 755 /data/data/org.gaeproxy/iptables\n"
               + "chmod 755 /data/data/org.gaeproxy/redsocks\n"
@@ -295,6 +307,10 @@ public class GAEProxyActivity extends PreferenceActivity
           Utils.runRootCommand("rm -f " + BASE + "/proxy.ini\n");
 
           install();
+
+          Editor edit = settings.edit();
+          edit.putBoolean(versionName, true);
+          edit.commit();
         }
 
         handler.sendEmptyMessage(MSG_INITIAL_FINISH);
@@ -625,6 +641,7 @@ public class GAEProxyActivity extends PreferenceActivity
         if (hosts.exists()) hosts.delete();
 
         copyAssets("");
+        copyAssets("certs");
 
         Utils.runCommand("chmod 755 /data/data/org.gaeproxy/iptables\n"
             + "chmod 755 /data/data/org.gaeproxy/redsocks\n"
