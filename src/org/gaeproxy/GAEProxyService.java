@@ -295,7 +295,7 @@ public class GAEProxyService extends Service {
 
       writeConfig();
 
-      final String cmd = BASE + "python-cl " + BASE + "goagent.py";
+      final String cmd = BASE + "python-cl " + BASE + "proxy.py";
 
       if (Utils.isRoot()) {
         Utils.runRootCommand(cmd);
