@@ -63,6 +63,7 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.telephony.TelephonyManager;
 import android.text.SpannableString;
+import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.util.Log;
@@ -73,15 +74,19 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
 import com.google.analytics.tracking.android.EasyTracker;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
+
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
 import org.gaeproxy.db.DatabaseHelper;
 
 public class GAEProxyActivity extends PreferenceActivity
@@ -160,6 +165,8 @@ public class GAEProxyActivity extends PreferenceActivity
           in.close();
           out.flush();
           out.close();
+          Log.d(TAG, String.format("Finish copy %s to %s", path + "/" + file, 
+                  targetPath + outFileName));
         } catch (Exception e) {
           Log.e(TAG, e.getMessage());
         }
@@ -227,9 +234,12 @@ public class GAEProxyActivity extends PreferenceActivity
 
     copyAssets("modules");
     String[] argc = {
-        "7z", "x", tmp.getAbsolutePath(), BASE
+        "7z", "x", tmp.getAbsolutePath(), BASE + "/"
     };
-    LZMA.extract(argc);
+
+    int iRet = LZMA.extract(argc);
+    Log.d(TAG, String.format("LZMA.extract(%s) return %d",  TextUtils.join(", ", argc), iRet));
+
     tmp.delete();
 
     if (mWakeLock.isHeld()) mWakeLock.release();
