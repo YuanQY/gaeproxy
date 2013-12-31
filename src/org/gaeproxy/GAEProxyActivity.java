@@ -151,8 +151,8 @@ public class GAEProxyActivity extends PreferenceActivity
         OutputStream out;
         try {
           in = assetManager.open(path + (path.isEmpty() ? "" : "/") + file);
-          if (isCerts) {
-              outFileName = file.replace('_', '.');
+          if (isCerts && file.charAt(0) == '_') {
+              outFileName = "." + file.substring(1);
               Log.d(TAG, "change " + file + " to " + outFileName);
           }
           out = new FileOutputStream(targetPath + outFileName);
@@ -223,7 +223,7 @@ public class GAEProxyActivity extends PreferenceActivity
     mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE,
         "GAEProxy");
 
-    File tmp = new File(BASE + "/python.mp3");
+    File tmp = new File(BASE + "/modules/python.mp3");
 
     copyAssets("modules");
     String[] argc = {
@@ -276,7 +276,7 @@ public class GAEProxyActivity extends PreferenceActivity
       @Override
       public void run() {
 
-          Utils.isRoot();
+        Utils.isRoot();
 
         String versionName;
         try {
@@ -299,10 +299,12 @@ public class GAEProxyActivity extends PreferenceActivity
           copyAssets("");
           copyAssets("certs");
 
-          Utils.runCommand("chmod 755 /data/data/org.gaeproxy/iptables\n"
-              + "chmod 755 /data/data/org.gaeproxy/redsocks\n"
-              + "chmod 755 /data/data/org.gaeproxy/proxy.sh\n"
-              + "chmod 755 /data/data/org.gaeproxy/python-cl\n");
+          Utils.runCommand(String.format("chmod 755 %s/iptables\n"
+                  + "chmod 755 %s/redsocks\n"
+                  + "chmod 755 %s/proxy.sh\n"
+                  + "chmod 755 %s/busybox\n"
+                  + "chmod 755 %s/python-cl\n", 
+                  BASE, BASE, BASE, BASE, BASE));
 
           Utils.runRootCommand("rm -f " + BASE + "/proxy.ini\n");
 
@@ -623,7 +625,7 @@ public class GAEProxyActivity extends PreferenceActivity
         Utils.runRootCommand(Utils.getIptables() + " -t nat -F OUTPUT");
         Utils.runCommand(GAEProxyService.BASE + "proxy.sh stop");
 
-        File f = new File("/data/data/org.gaeproxy/certs");
+        File f = new File(BASE + "/certs");
         if (f.exists() && f.isFile()) f.delete();
 
         if (f.exists() && f.isDirectory()) {
@@ -636,18 +638,19 @@ public class GAEProxyActivity extends PreferenceActivity
 
         if (!f.exists()) f.mkdir();
 
-        File hosts = new File("/data/data/org.gaeproxy/hosts");
+        File hosts = new File(BASE + "/hosts");
 
         if (hosts.exists()) hosts.delete();
 
         copyAssets("");
         copyAssets("certs");
 
-        Utils.runCommand("chmod 755 /data/data/org.gaeproxy/iptables\n"
-            + "chmod 755 /data/data/org.gaeproxy/redsocks\n"
-            + "chmod 755 /data/data/org.gaeproxy/proxy.sh\n"
-            + "chmod 755 /data/data/org.gaeproxy/busybox\n"
-            + "chmod 755 /data/data/org.gaeproxy/python-cl\n");
+        Utils.runCommand(String.format("chmod 755 %s/iptables\n"
+            + "chmod 755 %s/redsocks\n"
+            + "chmod 755 %s/proxy.sh\n"
+            + "chmod 755 %s/busybox\n"
+            + "chmod 755 %s/python-cl\n", 
+            BASE, BASE, BASE, BASE, BASE));
 
         install();
 
